@@ -1,14 +1,80 @@
 var gl;
 var program;
 
+var theta = 0.0;
 
-var modelM_loc;
+var theta_loc;
+var rotationMat_loc;
 var viewM_loc;
 var projectionM_loc;
 
-var SatelliteVAO;
+var somethingVAO;
 
 // ============================================================= //
+
+function createVAO() {
+    var vao = gl.createVertexArray();
+    gl.bindVertexArray(vao);
+    return vao;
+}
+
+
+function setupAttributes(vertices, colors) {
+
+    //vPosition
+    var positionBufferId = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBufferId);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+    var vPosition_loc = gl.getAttribLocation(program, "vPosition");
+    gl.vertexAttribPointer(vPosition_loc, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vPosition_loc);
+
+
+
+    //vColor
+    var colorBufferId = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBufferId);
+    gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
+
+    var vColor_loc = gl.getAttribLocation(program, "vColor");
+    gl.vertexAttribPointer(vColor_loc, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vColor_loc);
+}
+
+
+
+function setupUniforms(viewM, projectionM){
+    
+    //rotation
+    rotationMat_loc = gl.getUniformLocation(program, "rotationY");
+
+    //view matrix
+    viewM_loc = gl.getUniformLocation(program, "view");
+    gl.uniformMatrix4fv(viewM_loc, false, flatten(viewM));
+
+    //projection matrix
+    projectionM_loc = gl.getUniformLocation(program, "projection");
+    gl.uniformMatrix4fv(projectionM_loc, false, flatten(projectionM));
+}
+
+
+function render(numberOfIterations) {
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    //rendering of the something
+    gl.bindVertexArray(somethingVAO);
+    
+
+    theta+=1.0;
+    var rotation = rotate(theta, 0, 1, 0)
+    gl.uniformMatrix4fv(rotationMat_loc, false, flatten(rotation));
+    
+
+    gl.drawArrays(gl.TRIANGLES, 0, numberOfIterations);
+    requestAnimationFrame(render);
+
+}
 
 
 window.onload = function init() {
@@ -98,85 +164,17 @@ window.onload = function init() {
     }
     
     
-    //orthographric projection
     //var view = lookAt(vec3(1, 1, 0), vec3(0, 0, 0), vec3(0, 1, 0));
     //var projection = ortho(-30.0, 30.0, -30.0, 30.0, -30.0, 30.0);
 
-
-    //perspective projection
     var view = lookAt(vec3(-60, 30, 0), vec3(0, 0, 0), vec3(0, 1, 0));
     var projection = perspective(50, 1000/750, 1.0, 100.0);
 
 
-    SatelliteVAO = createVAO();
+    somethingVAO = createVAO();
     setupAttributes(vertices, new  Float32Array(verticesColors));
-    setupUniforms(0, view, projection);
+    setupUniforms(view, projection);
 
     render(numberOfVertices);
 }
-
-
-
-
-
-function createVAO() {
-    var vao = gl.createVertexArray();
-    gl.bindVertexArray(vao);
-    return vao;
-}
-
-
-function setupAttributes(vertices, colors) {
-
-    //vPosition
-    var positionBufferId = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBufferId);
-    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-
-    var vPosition_loc = gl.getAttribLocation(program, "vPosition");
-    gl.vertexAttribPointer(vPosition_loc, 3, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(vPosition_loc);
-
-
-
-    //vColor
-    var colorBufferId = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBufferId);
-    gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
-
-    var vColor_loc = gl.getAttribLocation(program, "vColor");
-    gl.vertexAttribPointer(vColor_loc, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(vColor_loc);
-}
-
-
-
-function setupUniforms(modelM, viewM, projectionM){
-    
-    //model
-    rotationMat_loc = gl.getUniformLocation(program, "model");
-    gl.uniformMatrix4fv(modelM_loc, false, flatten(modelM));
-
-    //view matrix
-    viewM_loc = gl.getUniformLocation(program, "view");
-    gl.uniformMatrix4fv(viewM_loc, false, flatten(viewM));
-
-    //projection matrix
-    projectionM_loc = gl.getUniformLocation(program, "projection");
-    gl.uniformMatrix4fv(projectionM_loc, false, flatten(projectionM));
-}
-
-
-function render(numberOfIterations) {
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
-    //rendering of the satellite
-    gl.bindVertexArray(SatelliteVAO);
-
-
-    gl.drawArrays(gl.TRIANGLES, 0, numberOfIterations);
-
-}
-
-
 
