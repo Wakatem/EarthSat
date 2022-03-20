@@ -6,28 +6,36 @@
     <script id="vertex-shader" type="x-shader/x-vertex">#version 300 es
         in vec4 vPosition; 
         in vec4 vColor;
+        in vec2 a_texcoord;
+
         uniform mat4 rotationY;
         uniform mat4 view;
         uniform mat4 projection;
+
         out vec4 color;
+        out vec2 v_texcoord;
 
         void main() 
         { 
             gl_Position =  projection * view * rotationY * vPosition;
             color = vColor;
 
-            
+            v_texcoord = a_texcoord;
         }
     </script>
 
     <script id="fragment-shader" type="x-shader/x-fragment">#version 300 es
         precision mediump float; 
         in vec4 color; 
+        in vec2 v_texcoord;
+
+        uniform sampler2D u_texture;
+
         out vec4 fragColor;
 
         void main()
          { 
-             fragColor = color;
+             fragColor = texture(u_texture, v_texcoord);
         }
     </script>
 

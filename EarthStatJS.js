@@ -19,7 +19,7 @@ function createVAO() {
 }
 
 
-function setupAttributes(vertices, colors) {
+function setupAttributes(vertices, colors, texcoord) {
 
     //vPosition
     var positionBufferId = gl.createBuffer();
@@ -33,13 +33,23 @@ function setupAttributes(vertices, colors) {
 
 
     //vColor
-    var colorBufferId = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBufferId);
-    gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
+    // var colorBufferId = gl.createBuffer();
+    // gl.bindBuffer(gl.ARRAY_BUFFER, colorBufferId);
+    // gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
 
-    var vColor_loc = gl.getAttribLocation(program, "vColor");
-    gl.vertexAttribPointer(vColor_loc, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(vColor_loc);
+    // var vColor_loc = gl.getAttribLocation(program, "vColor");
+    // gl.vertexAttribPointer(vColor_loc, 4, gl.FLOAT, false, 0, 0);
+    // gl.enableVertexAttribArray(vColor_loc);
+
+
+    //a_texcoord
+    var texBufferId = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, texBufferId);
+    gl.bufferData(gl.ARRAY_BUFFER, texcoord, gl.STATIC_DRAW);
+
+    var a_texcoord_loc = gl.getAttribLocation(program, "a_texcoord");
+    gl.vertexAttribPointer(a_texcoord_loc, 2, gl.FLOAT, true, 0, 0);
+    gl.enableVertexAttribArray(a_texcoord_loc);
 }
 
 
@@ -95,15 +105,15 @@ window.onload = function init() {
 
     //all unique points (corners) of the solar panel
     var p = [
-        [-15,    0,  15],      //v0
+        [-15,    -15,  15],      //v0
         [-15,  15,   15],      //v1
         [15,   15,   15],      //v2
-        [15,     0,  15],      //v3
+        [15,     -15,  15],      //v3
         
-        [-15,     0,  -15],      //v4
+        [-15,     -15,  -15],      //v4
         [-15,     15,  -15],     //v5
         [15,    15,  -15],       //v6
-        [15,  0,  -15]           //v7
+        [15,  -15,  -15]           //v7
     ];
     
     
@@ -130,38 +140,104 @@ window.onload = function init() {
         ...p[0], ...p[3], ...p[7],
         ...p[7], ...p[4], ...p[0],   //bottom face
     ]);
+
+    var t = [
+        [0.25, 0],
+        [0.5, 0],
+        [0, 0.34],
+        [0.25, 0.34],
+        [0.5, 0.34],
+        [0.75, 0.34],
+        [1.0, 0.34],
+        [0, 0.66],
+        [0.25, 0.66],
+        [0.5, 0.66],
+        [0.75, 0.66],
+        [1.0, 0.66],
+        [0.25, 1.0],
+        [0.5, 1.0]
+    ];
+
+    var textcoord = new Float32Array([
+
+        //front face
+        ...t[8], ...t[9], ...t[4],
+        ...t[4], ...t[3], ...t[8],
+
+        //back face
+        ...t[10], ...t[11], ...t[6 ],
+        ...t[6 ], ...t[5 ], ...t[10],
+
+        //left face
+        ...t[7], ...t[8], ...t[3],
+        ...t[3], ...t[2], ...t[7],
+
+        //right face
+        ...t[9], ...t[10], ...t[5],
+        ...t[5], ...t[4 ], ...t[9],
+
+        //top face
+        ...t[3], ...t[4], ...t[1],
+        ...t[1], ...t[0], ...t[3],
+
+        //bottom face
+        ...t[12], ...t[13], ...t[9 ],
+        ...t[9 ], ...t[8 ], ...t[12]
+    ]);
     
-    
+    var texture = gl.createTexture();
+
+    // use texture unit 0
+    gl.activeTexture(gl.TEXTURE0 + 0);
+
+    // bind to the TEXTURE_2D bind point of texture unit 0
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    // Fill the texture with a 1x1 blue pixel.
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+                new Uint8Array([0, 0, 255, 255]));
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+
+    // Asynchronously load an image
+    var image = new Image();
+    image.src = "media/earth.png";
+    image.addEventListener('load', function() {
+        // Now that the image has loaded make copy it to the texture.
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+        gl.generateMipmap(gl.TEXTURE_2D);
+    });
 
 
     //total rendered number of vertices
-    var numberOfVertices = vertices.length / 3;
+    //var numberOfVertices = vertices.length / 2;
+    var numberOfVertices = 6 * 3;
 
     var verticesColors = [];
 
-    var faceColor = [
-        [1, 0, 0, 1],   //red
-        [0, 1, 0, 1],   //green
-        [0, 1, 1, 1],   //cyan
-        [0, 0, 1, 1],   //blue
-        [1, 0, 1, 1],   //purple
-        [1, 1, 0, 1]    //yellow
-    ]
+    // var faceColor = [
+    //     [1, 0, 0, 1],   //red
+    //     [0, 1, 0, 1],   //green
+    //     [0, 1, 1, 1],   //cyan
+    //     [0, 0, 1, 1],   //blue
+    //     [1, 0, 1, 1],   //purple
+    //     [1, 1, 0, 1]    //yellow
+    // ]
 
 
     
-    var selectedColor = 0;
-    while (verticesColors.length / 4 != numberOfVertices)       
-    {
-        var counter = 0;
-        while(counter != 6)
-        {
-            verticesColors.push(...faceColor[selectedColor]);
-            counter++;
-        }
+    // var selectedColor = 0;
+    // while (verticesColors.length / 4 != numberOfVertices)       
+    // {
+    //     var counter = 0;
+    //     while(counter != 6)
+    //     {
+    //         verticesColors.push(...faceColor[selectedColor]);
+    //         counter++;
+    //     }
         
-        selectedColor++;
-    }
+    //     selectedColor++;
+    // }
     
     
     //var view = lookAt(vec3(1, 1, 0), vec3(0, 0, 0), vec3(0, 1, 0));
@@ -172,7 +248,7 @@ window.onload = function init() {
 
 
     somethingVAO = createVAO();
-    setupAttributes(vertices, new  Float32Array(verticesColors));
+    setupAttributes(vertices, new  Float32Array(verticesColors), textcoord);
     setupUniforms(view, projection);
 
     render(numberOfVertices);
