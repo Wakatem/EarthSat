@@ -19,12 +19,11 @@
 
         void main() 
         { 
+            gl_Position =  projection * view  * transformation * vPosition;
             model_isEarth = modelIsEarth;
             if(modelIsEarth == 1.0){
-                gl_Position =  projection * view  * transformation * vPosition;
                 v_texcoord = a_texcoord;
             }else{
-                gl_Position =  projection * view * vPosition;
                 color = vColor;
             }
         }
@@ -46,7 +45,7 @@
             if(model_isEarth == 1.0){
                 fragColor = texture(u_texture, v_texcoord);
             }else{
-                fragColor = color;
+                fragColor = vec4(1.0, 1.0, 1.0, 1.0);
             }
         }
     </script>

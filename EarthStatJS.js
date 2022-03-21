@@ -10,6 +10,8 @@ var modelIsEarth_loc;
 var earth;
 var sat;
 
+var translationX = 0.0;
+var translationY = 0.0;
 // ============================================================= //
 
 
@@ -25,7 +27,7 @@ window.onload = function init() {
 
     //configure view
     gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.clearColor(0.0, 0.0, 0.0, 1.0); //set RGBA values of canvas color on color buffer clearance
+    gl.clearColor(0.0, 0.0, 0.0, 0.9); //set RGBA values of canvas color on color buffer clearance
     gl.enable(gl.DEPTH_TEST);
 
 
@@ -37,8 +39,8 @@ window.onload = function init() {
 
 
 
-    //earth = new Earth();
-    sat = new Satellite();
+    earth = new Earth();
+    sat = new Surface();
     renderModels();
 }
 
@@ -46,7 +48,7 @@ window.onload = function init() {
 function renderModels(){
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    //earth.render();
+    earth.render();
     sat.render();
 
     requestAnimationFrame(renderModels);
@@ -160,7 +162,7 @@ function vMult(m, v)
 
 
 
-class Satellite{
+class Surface{
     constructor(){
         this.vao = gl.createVertexArray();
         gl.bindVertexArray(this.vao);
@@ -172,18 +174,18 @@ class Satellite{
             submodels:
             [
                 {
-                    rotation: rotate(0, 1, 0, 0),
+                    rotation: rotate(10, 1, 0, 0),
                     points: 
                     [
-                        [-15,    0,  15, 1],      //v0
-                        [-15,  15,   15, 1],      //v1
-                        [15,   15,   15, 1],      //v2
-                        [15,     0,  15, 1],      //v3
+                        [-15,    0,  13, 1],      //v0
+                        [-15,  10,   13, 1],      //v1
+                        [10,   10,   13, 1],      //v2
+                        [10,     0,  13, 1],      //v3
                 
-                        [-15,     0,  -15, 1],      //v4
-                        [-15,     15,  -15, 1],     //v5
-                        [15,    15,  -15, 1],       //v6
-                        [15,  0,  -15, 1]           //v7
+                        [-15,     0,  -13, 1],      //v4
+                        [-15,     15,  -13, 1],     //v5
+                        [15,    15,  -13, 1],       //v6
+                        [15,  0,  -13, 1]           //v7
                     ]
                 }
 
@@ -240,8 +242,29 @@ class Satellite{
 
 
 
+
             //total rendered number of vertices
            var numberOfVertices = this.vertices.length / 4;
+
+           
+           var j=0;
+           var factor = 0.17
+           for (let i = 0; i < numberOfVertices; i++) {
+               //scale x
+               this.vertices[j] = this.vertices[j] * factor
+               j++;
+
+               //scale y
+               this.vertices[j] = this.vertices[j] * factor
+               j++;
+
+               //scale z
+               this.vertices[j] = this.vertices[j] * factor
+               j++;
+
+               //skip w
+               j++
+           }
     
            var faceColor = 
            [
@@ -269,6 +292,7 @@ class Satellite{
            }
 
 
+           
 
         });
 
@@ -279,9 +303,11 @@ class Satellite{
         gl.bindVertexArray(this.vao);
         gl.uniform1f(modelIsEarth_loc, 2.0);
 
-        // theta+=1.0;
-        // var rotation = rotate(theta, 0, 1, 0)
-        // gl.uniformMatrix4fv(transformationMat_loc, false, flatten(rotation));
+        theta+=1.0;
+        var rotation = rotate(theta, 0, 1, 0);
+        var translation = translate(0, translationY, translationX)
+
+        gl.uniformMatrix4fv(transformationMat_loc, false, flatten(translation));
 
         gl.drawArrays(gl.TRIANGLES, 0, 36);
     }
@@ -427,6 +453,36 @@ class Earth{
     }
 
 }
+
+
+
+////////////////////////////// controls
+
+document.addEventListener('keydown', (event) => {
+    var name = event.key;
+    var code = event.code;
+    if (name === 'ArrowLeft') {
+      // Do nothing.
+      translationX -= 3.0;
+    }
+
+    if (name === 'ArrowRight') {
+        // Do nothing.
+        translationX += 3.0;
+      }
+    
+
+      if (name === 'ArrowUp') {
+        // Do nothing.
+        translationY += 3.0;
+      }
+
+      if (name === 'ArrowDown') {
+        // Do nothing.
+        translationY -= 3.0; 
+      }
+
+    });
 
 
 
