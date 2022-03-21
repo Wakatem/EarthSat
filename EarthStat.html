@@ -8,19 +8,25 @@
         in vec4 vColor;
         in vec2 a_texcoord;
 
-        uniform mat4 rotationY;
+        uniform mat4 transformation;
         uniform mat4 view;
         uniform mat4 projection;
+        uniform float modelIsEarth;
 
         out vec4 color;
         out vec2 v_texcoord;
+        out float model_isEarth;
 
         void main() 
         { 
-            gl_Position =  projection * view * rotationY * vPosition;
-            color = vColor;
-
-            v_texcoord = a_texcoord;
+            model_isEarth = modelIsEarth;
+            if(modelIsEarth == 1.0){
+                gl_Position =  projection * view  * transformation * vPosition;
+                v_texcoord = a_texcoord;
+            }else{
+                gl_Position =  projection * view * vPosition;
+                color = vColor;
+            }
         }
     </script>
 
@@ -28,6 +34,7 @@
         precision mediump float; 
         in vec4 color; 
         in vec2 v_texcoord;
+        in float model_isEarth;
 
         uniform sampler2D u_texture;
 
@@ -35,7 +42,12 @@
 
         void main()
          { 
-             fragColor = texture(u_texture, v_texcoord);
+            fragColor = texture(u_texture, v_texcoord);
+            if(model_isEarth == 1.0){
+                fragColor = texture(u_texture, v_texcoord);
+            }else{
+                fragColor = color;
+            }
         }
     </script>
 
@@ -49,7 +61,7 @@
 
 <body>
     
-    <canvas id="gl-canvas" width="1000" height="750">
+    <canvas id="gl-canvas" width="1096" height="822">
         Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
 </body>
