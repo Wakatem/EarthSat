@@ -304,7 +304,6 @@ class Surface{
         gl.uniform1f(modelIsEarth_loc, 2.0);
 
         theta+=1.0;
-        var rotation = rotate(theta, 0, 1, 0);
         var translation = translate(0, translationY, translationX)
 
         gl.uniformMatrix4fv(transformationMat_loc, false, flatten(translation));

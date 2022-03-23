@@ -1,0 +1,1 @@
+Textures do not work on firefox browser. Please use edge/chrome browser using a http server
